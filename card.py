@@ -45,5 +45,5 @@ class Card:
 # print(card.rank, card.suit)
 # print(str(card))
 
-x = 'A'
-print(Card.get_rank_value(x))
+# x = 'A'
+# print(Card.get_rank_value(x))
