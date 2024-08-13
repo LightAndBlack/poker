@@ -35,8 +35,15 @@ class Card:
     def get_card_value(card):
         return Card.RANK_MAP[card[:-1]]
 
+    @staticmethod
+    def get_rank_value(rank):
+        return Card.RANK_MAP[rank]
+
 
 # примеры создания карт
 # card = Card(11, 2)
 # print(card.rank, card.suit)
 # print(str(card))
+
+x = 'A'
+print(Card.get_rank_value(x))
