@@ -18,7 +18,7 @@ def sort_cards(cards):
     return sorted(cards, key=lambda card: Card.get_card_value(card), reverse=True)
 
 
-showdown_cards = ['Ad', 'Kh', 'Td', 'Jh', 'Qh', '9h', '8d']
+showdown_cards = ['Ah', '8s', 'Ac', '9c', 'As', '8d', 'Ad']
 sorted_cards = sort_cards(showdown_cards)
 
 royal = (
@@ -155,6 +155,42 @@ def is_straight_flush(showdown_cards_arg):
 
 
 # print(f"Стрит-флэш: {is_straight_flush(sorted_cards)}")
+# def is_four_ranks():
+#     pass
+
+# ranks_lst = []
+has_match = Counter([card[0] for card in sorted_cards])
+# print(has_match)
+# keys = has_match.keys()
+# values = has_match.values()
+# print("Ключи:", keys)
+# print("Значения:", values)
+has_quads = [k for k, v in has_match.items() if v == 4]
+has_set = [k for k, v in has_match.items() if v == 3]
+has_pair = [k for k, v in has_match.items() if v == 2]
+print(f"Каре по {has_quads}")
+print(f"Сет по {has_set}")
+print(f"Пара {has_pair}")
+print(sorted_cards)
+
+
+def is_quads(sorted_cards_arg):
+    if has_quads:
+        quads = [card for card in sorted_cards_arg if card[0] == has_quads[0]]
+        if has_quads[0] == sorted_cards_arg[0][0]:
+            quads.append(sorted_cards_arg[4])
+            power_combo = FOUR_CARDS + Card.get_card_value(quads[4]) + Card.get_card_value(quads[0]) * 4
+            print(power_combo)
+        else:
+            quads.insert(0, sorted_cards_arg[0])
+            power_combo = FOUR_CARDS + Card.get_card_value(quads[0]) + Card.get_card_value(quads[4]) * 4
+            print(power_combo)
+        return "Каре: ", quads
+    else:
+        return 0
+
+
+print(is_quads(sorted_cards))
 
 
 def evaluate_combo():
@@ -171,14 +207,6 @@ def evaluate_combo():
 
 
 print(evaluate_combo())
-
-# print(f"Флэш: {is_flush(sorted_cards)}")
-# print(f"Стрит: {is_straight(showdown_cards)}")
-# print(f"Роял-флэш: {is_royal_flush(sorted_cards)}")
-# print(f"Стрит-флэш: {is_straight_flush(showdown_cards)}")
-
-# print(is_straight(showdown_cards))
-# print(is_flush(is_straight(showdown_cards)))  # !!!
 
 # Измерение времени выполнения
 # start_time = time.perf_counter()
