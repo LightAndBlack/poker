@@ -18,7 +18,7 @@ def sort_cards(cards):
     return sorted(cards, key=lambda card: Card.get_card_value(card), reverse=True)
 
 
-showdown_cards = ['Ah', '8s', 'Ac', '9c', 'As', '8d', 'Ad']
+showdown_cards = ['Kh', 'Ks', 'Ac', 'Ad', '8s', '2d', 'As']
 sorted_cards = sort_cards(showdown_cards)
 
 royal = (
@@ -168,10 +168,12 @@ has_match = Counter([card[0] for card in sorted_cards])
 has_quads = [k for k, v in has_match.items() if v == 4]
 has_set = [k for k, v in has_match.items() if v == 3]
 has_pair = [k for k, v in has_match.items() if v == 2]
-print(f"Каре по {has_quads}")
-print(f"Сет по {has_set}")
-print(f"Пара {has_pair}")
-print(sorted_cards)
+# print(f"Каре по {has_quads}")
+# print(f"Сет по {has_set}")
+# print(f"Пара {has_pair}")
+
+
+# print(sorted_cards)
 
 
 def is_quads(sorted_cards_arg):
@@ -180,17 +182,40 @@ def is_quads(sorted_cards_arg):
         if has_quads[0] == sorted_cards_arg[0][0]:
             quads.append(sorted_cards_arg[4])
             power_combo = FOUR_CARDS + Card.get_card_value(quads[4]) + Card.get_card_value(quads[0]) * 4
-            print(power_combo)
+            # print(power_combo)
         else:
             quads.insert(0, sorted_cards_arg[0])
             power_combo = FOUR_CARDS + Card.get_card_value(quads[0]) + Card.get_card_value(quads[4]) * 4
-            print(power_combo)
-        return "Каре: ", quads
+            # print(power_combo)
+        return quads
+    else:
+        return 0
+
+# three_equal_ranks = [card for card in sorted_cards_arg if card[0] == has_set[0]]
+# two_equal_ranks = [card for card in sorted_cards_arg if card[0] == has_pair[0]]
+
+
+def is_full_house(sorted_cards_arg):
+    if has_set and has_pair:
+        three_equal_ranks = [card for card in sorted_cards_arg if card[0] == has_set[0]]
+        # print(f"three_equal_ranks = {three_equal_ranks}")
+        two_equal_ranks = [card for card in sorted_cards_arg if card[0] == has_pair[0]]
+        # print(f"two_equal_ranks = {two_equal_ranks}")
+        power_combo = FULL_HOUSE + Card.get_rank_value(has_set[0]) * 3 + Card.get_rank_value(has_pair[0]) * 2
+        print(power_combo)
+        return three_equal_ranks + two_equal_ranks
+    elif has_set and len(has_set) == 2:
+        three_equal_ranks = [card for card in sorted_cards_arg if card[0] == has_set[0]]
+        two_equal_ranks = [card for card in sorted_cards_arg if card[0] == has_set[1]]
+        power_combo = FULL_HOUSE + Card.get_rank_value(has_set[0]) * 3 + Card.get_rank_value(has_set[1]) * 2
+        print(power_combo)
+        return three_equal_ranks + two_equal_ranks[:-1]
     else:
         return 0
 
 
-print(is_quads(sorted_cards))
+# print(is_quads(sorted_cards))
+# print(is_full_house(sorted_cards))
 
 
 def evaluate_combo():
@@ -198,6 +223,10 @@ def evaluate_combo():
         return "Роял-флэш", *is_royal_flush(sorted_cards)
     elif is_straight_flush(showdown_cards):
         return "Стрит-флэш", is_straight_flush(showdown_cards)
+    elif is_quads(sorted_cards):
+        return "Каре: ", is_quads(sorted_cards)
+    elif is_full_house(sorted_cards):
+        return "Фул-хаус: ", is_full_house(sorted_cards)
     elif is_flush(sorted_cards):
         return "Флэш", is_flush(sorted_cards)
     elif is_straight(showdown_cards):
