@@ -8,7 +8,7 @@ FOUR_CARDS = 800
 FULL_HOUSE = 700
 FLUSH = 600
 STRAIGHT = 500
-THREE_CARDS = 400
+SET = 400
 TWO_PAIRS = 300
 ONE_PAIR = 200
 HIGH_CARD = 100
@@ -18,7 +18,7 @@ def sort_cards(cards):
     return sorted(cards, key=lambda card: Card.get_card_value(card), reverse=True)
 
 
-showdown_cards = ['Kh', 'Ks', 'Ac', 'Ad', '8s', '2d', 'As']
+showdown_cards = ['Th', '2s', '8c', '6d', '2c', '2d', 'Js']
 sorted_cards = sort_cards(showdown_cards)
 
 royal = (
@@ -214,8 +214,34 @@ def is_full_house(sorted_cards_arg):
         return 0
 
 
+def is_set(sorted_cards_arg):
+    if has_set:
+        set_combo = [card for card in sorted_cards_arg if card[0] == has_set[0]]
+        # print(f"set_combo[0[0] = {set_combo[0][0]}")
+        # print(f"sorted_cards_arg[0][0] = {sorted_cards_arg[0][0]}")
+        # print(f"sorted_cards_arg = {sorted_cards_arg}")
+        if set_combo[0][0] == sorted_cards_arg[0][0]:
+            set_combo.extend(sorted_cards_arg[3:5])
+        elif set_combo[0][0] == sorted_cards_arg[1][0]:
+            set_combo.append(sorted_cards_arg[0])
+            set_combo.append(sorted_cards_arg[4])
+        else:
+            # print(sorted_cards_arg[0:2])
+            # print(sorted_cards_arg[0:2].extend(set_combo))
+            set_combo.insert(0, sorted_cards_arg[0])
+            set_combo.insert(1, sorted_cards_arg[1])
+        ranks_combo = sum([Card.get_card_value(rank) for rank in set_combo])
+        # print(ranks_combo)
+        power_combo = SET + ranks_combo
+        # print(power_combo)
+        return set_combo
+    else:
+        return 0
+
+
 # print(is_quads(sorted_cards))
 # print(is_full_house(sorted_cards))
+# print(is_set(sorted_cards))
 
 
 def evaluate_combo():
@@ -231,8 +257,10 @@ def evaluate_combo():
         return "Флэш", is_flush(sorted_cards)
     elif is_straight(showdown_cards):
         return "Стрит", is_straight(showdown_cards)
+    elif is_set(sorted_cards):
+        return "Сет", is_set(sorted_cards)
     else:
-        return "Нет комбинации"
+        return "Старшая карта"
 
 
 print(evaluate_combo())
