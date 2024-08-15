@@ -257,7 +257,8 @@ def is_two_pairs(sorted_cards_arg):
         else:
             two_pairs.append(sorted_cards_arg[4])
         ranks_combo = sum([Card.get_card_value(card) for card in two_pairs])
-        # print(ranks_combo)
+        power_combo = TWO_PAIRS + ranks_combo
+        # print(power_combo)
         return two_pairs
     else:
         return 0
