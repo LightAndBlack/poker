@@ -18,7 +18,7 @@ def sort_cards(cards):
     return sorted(cards, key=lambda card: Card.get_card_value(card), reverse=True)
 
 
-showdown_cards = ['Th', '5s', '9c', '9d', '5c', 'Qd', 'Js']
+showdown_cards = ['2s', 'As', '8d', '7d', '5s', '4s', '9d']
 sorted_cards = sort_cards(showdown_cards)
 
 royal = (
@@ -168,6 +168,8 @@ has_match = Counter([card[0] for card in sorted_cards])
 has_quads = [k for k, v in has_match.items() if v == 4]
 has_set = [k for k, v in has_match.items() if v == 3]
 has_pair = [k for k, v in has_match.items() if v == 2]
+
+
 # print(f"Каре по {has_quads}")
 # print(f"Сет по {has_set}")
 # print(f"Пара {has_pair}")
@@ -190,6 +192,7 @@ def is_quads(sorted_cards_arg):
         return quads
     else:
         return 0
+
 
 # three_equal_ranks = [card for card in sorted_cards_arg if card[0] == has_set[0]]
 # two_equal_ranks = [card for card in sorted_cards_arg if card[0] == has_pair[0]]
@@ -247,19 +250,38 @@ def is_two_pairs(sorted_cards_arg):
         second_pair = [card for card in sorted_cards_arg if card[0] == has_pair[1]]
         # print(first_pair[0])
         # print(sorted_cards_arg[0])
-        two_pairs = second_pair + first_pair
+        two_pairs = first_pair + second_pair
         # print(Card.get_card_value(sorted_cards_arg[0]))
         # print(Card.get_card_value(first_pair[0]))
         if Card.get_card_value(sorted_cards_arg[0]) > Card.get_card_value(first_pair[0]):
             two_pairs.append(sorted_cards_arg[0])
-        elif Card.get_card_value(first_pair[0]) > Card.get_card_value(sorted_cards_arg[2]) > Card.get_card_value(second_pair[0]):
+        elif Card.get_card_value(first_pair[0]) > Card.get_card_value(sorted_cards_arg[2]) > Card.get_card_value(
+                second_pair[0]):
             two_pairs.append(sorted_cards_arg[2])
         else:
             two_pairs.append(sorted_cards_arg[4])
-        ranks_combo = sum([Card.get_card_value(card) for card in two_pairs])
-        power_combo = TWO_PAIRS + ranks_combo
+        sum_ranks_combo = sum([Card.get_card_value(card) for card in two_pairs])
+        power_combo = TWO_PAIRS + sum_ranks_combo
         # print(power_combo)
         return two_pairs
+    else:
+        return 0
+
+
+def is_one_pair(sorted_cards_arg):
+    if has_pair:
+        # Получаем карты, которые составляют пару
+        one_pair = [card for card in sorted_cards_arg if card[0] == has_pair[0]]
+        first_index = sorted_cards_arg.index(one_pair[0])
+        # Находим остальные карты для комбинации (4 карты с начала и до пары)
+        remaining_cards = sorted_cards_arg[0:first_index] + sorted_cards_arg[first_index + 2:]
+        # Выбираем до 3 дополнительных карт для завершения комбинации из 5 карт
+        one_pair_combo = one_pair + remaining_cards[:3]
+        sum_ranks_combo = sum([Card.get_card_value(card) for card in one_pair_combo])
+        power_combo = ONE_PAIR + sum_ranks_combo
+        # print(power_combo)
+    # Возвращаем комбинацию
+        return one_pair_combo
     else:
         return 0
 
@@ -287,8 +309,13 @@ def evaluate_combo():
         return "Сет", is_set(sorted_cards)
     elif is_two_pairs(sorted_cards):
         return "Две пары", is_two_pairs(sorted_cards)
+    elif is_one_pair(sorted_cards):
+        return "Пара", is_one_pair(sorted_cards)
     else:
-        return "Старшая карта"
+        sum_ranks_combo = sum([Card.get_card_value(card) for card in sorted_cards[:5]])
+        power_combo = HIGH_CARD + sum_ranks_combo
+        # print(power_combo)
+        return "Старшая карта", sorted_cards[:5]
 
 
 print(evaluate_combo())
