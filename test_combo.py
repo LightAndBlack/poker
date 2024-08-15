@@ -18,7 +18,7 @@ def sort_cards(cards):
     return sorted(cards, key=lambda card: Card.get_card_value(card), reverse=True)
 
 
-showdown_cards = ['Th', '2s', '8c', '6d', '2c', '2d', 'Js']
+showdown_cards = ['Th', '5s', '9c', '9d', '5c', 'Qd', 'Js']
 sorted_cards = sort_cards(showdown_cards)
 
 royal = (
@@ -228,8 +228,10 @@ def is_set(sorted_cards_arg):
         else:
             # print(sorted_cards_arg[0:2])
             # print(sorted_cards_arg[0:2].extend(set_combo))
-            set_combo.insert(0, sorted_cards_arg[0])
-            set_combo.insert(1, sorted_cards_arg[1])
+            # set_combo.insert(0, sorted_cards_arg[0])
+            # set_combo.insert(1, sorted_cards_arg[1])
+            set_combo.append(sorted_cards_arg[1])
+            set_combo.append(sorted_cards_arg[0])
         ranks_combo = sum([Card.get_card_value(rank) for rank in set_combo])
         # print(ranks_combo)
         power_combo = SET + ranks_combo
@@ -239,6 +241,29 @@ def is_set(sorted_cards_arg):
         return 0
 
 
+def is_two_pairs(sorted_cards_arg):
+    if len(has_pair) == 2:
+        first_pair = [card for card in sorted_cards_arg if card[0] == has_pair[0]]
+        second_pair = [card for card in sorted_cards_arg if card[0] == has_pair[1]]
+        # print(first_pair[0])
+        # print(sorted_cards_arg[0])
+        two_pairs = second_pair + first_pair
+        # print(Card.get_card_value(sorted_cards_arg[0]))
+        # print(Card.get_card_value(first_pair[0]))
+        if Card.get_card_value(sorted_cards_arg[0]) > Card.get_card_value(first_pair[0]):
+            two_pairs.append(sorted_cards_arg[0])
+        elif Card.get_card_value(first_pair[0]) > Card.get_card_value(sorted_cards_arg[2]) > Card.get_card_value(second_pair[0]):
+            two_pairs.append(sorted_cards_arg[2])
+        else:
+            two_pairs.append(sorted_cards_arg[4])
+        ranks_combo = sum([Card.get_card_value(card) for card in two_pairs])
+        # print(ranks_combo)
+        return two_pairs
+    else:
+        return 0
+
+
+# print(is_two_pairs(sorted_cards))
 # print(is_quads(sorted_cards))
 # print(is_full_house(sorted_cards))
 # print(is_set(sorted_cards))
@@ -259,6 +284,8 @@ def evaluate_combo():
         return "Стрит", is_straight(showdown_cards)
     elif is_set(sorted_cards):
         return "Сет", is_set(sorted_cards)
+    elif is_two_pairs(sorted_cards):
+        return "Две пары", is_two_pairs(sorted_cards)
     else:
         return "Старшая карта"
 
