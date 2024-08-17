@@ -1,6 +1,7 @@
 from collections import Counter, defaultdict
 from card import Card
 from test_game import players, river
+from player import Player
 
 
 def get_combined_hands(players_dict, river_cards):
@@ -12,7 +13,7 @@ def get_combined_hands(players_dict, river_cards):
 
 
 all_hands = get_combined_hands(players, river)
-print(all_hands)
+# print(all_hands)
 
 ROYAL_FLUSH = 1000
 STRAIGHT_FLUSH = 900
@@ -30,7 +31,7 @@ def sort_cards(cards):
     return sorted(cards, key=lambda card: Card.get_card_value(card), reverse=True)
 
 
-# showdown_cards = ['2c', 'As', 'Ah', 'Js', '2h', 'Qh', 'Qc']
+# showdown_cards = ['5c', '3d', '2d', '7c', 'Ah', 'Qs', 'Qc']
 # sorted_cards = sort_cards(showdown_cards)
 
 royal = (
@@ -144,10 +145,20 @@ def is_straight_flush(showdown_cards_arg):
             return 0
 
 
-has_match = Counter([card[0] for card in sort_cards(all_hands['Player 1'])])
-has_quads = [k for k, v in has_match.items() if v == 4]
-has_set = [k for k, v in has_match.items() if v == 3]
-has_pair = [k for k, v in has_match.items() if v == 2]
+# all_showdown_combos = [v for k, v in all_hands.items()]
+# print(all_showdown_combos)
+#
+# for combo in all_showdown_combos:
+#     has_match = Counter([card[0] for card in sort_cards(combo)])  # !!!!!!
+#     has_quads = [k for k, v in has_match.items() if v == 4]
+#     has_set = [k for k, v in has_match.items() if v == 3]
+#     has_pair = [k for k, v in has_match.items() if v == 2]
+
+
+# has_match = Counter([card[0] for card in sort_cards(all_hands['Player 1'])])  # !!!!!!
+# has_quads = [k for k, v in has_match.items() if v == 4]
+# has_set = [k for k, v in has_match.items() if v == 3]
+# has_pair = [k for k, v in has_match.items() if v == 2]
 
 
 # has_match = Counter([card[0] for card in sort_cards(sorted_cards)])
@@ -157,6 +168,8 @@ has_pair = [k for k, v in has_match.items() if v == 2]
 
 
 def is_quads(sorted_cards_arg):
+    has_match = Counter([card[0] for card in sort_cards(sorted_cards_arg)])
+    has_quads = [k for k, v in has_match.items() if v == 4]
     if has_quads:
         quads = [card for card in sorted_cards_arg if card[0] == has_quads[0]]
         if has_quads[0] == sorted_cards_arg[0][0]:
@@ -171,6 +184,9 @@ def is_quads(sorted_cards_arg):
 
 
 def is_full_house(sorted_cards_arg):
+    has_match = Counter([card[0] for card in sort_cards(sorted_cards_arg)])
+    has_set = [k for k, v in has_match.items() if v == 3]
+    has_pair = [k for k, v in has_match.items() if v == 2]
     if has_set and has_pair:
         three_equal_ranks = [card for card in sorted_cards_arg if card[0] == has_set[0]]
         two_equal_ranks = [card for card in sorted_cards_arg if card[0] == has_pair[0]]
@@ -185,6 +201,8 @@ def is_full_house(sorted_cards_arg):
 
 
 def is_set(sorted_cards_arg):
+    has_match = Counter([card[0] for card in sort_cards(sorted_cards_arg)])
+    has_set = [k for k, v in has_match.items() if v == 3]
     if has_set:
         set_combo = [card for card in sorted_cards_arg if card[0] == has_set[0]]
         if set_combo[0][0] == sorted_cards_arg[0][0]:
@@ -203,6 +221,8 @@ def is_set(sorted_cards_arg):
 
 
 def is_two_pairs(sorted_cards_arg):
+    has_match = Counter([card[0] for card in sort_cards(sorted_cards_arg)])
+    has_pair = [k for k, v in has_match.items() if v == 2]
     if len(has_pair) >= 2:
         first_pair = [card for card in sorted_cards_arg if card[0] == has_pair[0]]
         second_pair = [card for card in sorted_cards_arg if card[0] == has_pair[1]]
@@ -222,6 +242,8 @@ def is_two_pairs(sorted_cards_arg):
 
 
 def is_one_pair(sorted_cards_arg):
+    has_match = Counter([card[0] for card in sort_cards(sorted_cards_arg)])
+    has_pair = [k for k, v in has_match.items() if v == 2]
     if has_pair:
         one_pair = [card for card in sorted_cards_arg if card[0] == has_pair[0]]
         first_index = sorted_cards_arg.index(one_pair[0])
@@ -266,7 +288,16 @@ def evaluate_combo(sorted_cards_args):
 
 
 # print(all_hands['Player 1'])
-print(sort_cards(all_hands['Player 1']))
-player1 = sort_cards(all_hands['Player 1'])
+# print(sort_cards(all_hands['Player 1']))
+# player1 = sort_cards(all_hands['Player 1'])
 # print(player1, type(player1))
-print(evaluate_combo(player1))
+# print(evaluate_combo(player1))
+
+# all_showdown_combos = [v for k, v in all_hands.items()]
+# # print(all_showdown_combos)
+# #
+# for combo in all_showdown_combos:
+#     print(evaluate_combo(sort_cards(combo)))
+
+for players, hand in all_hands.items():
+    print(f"{players}: {evaluate_combo(sort_cards(hand))}")

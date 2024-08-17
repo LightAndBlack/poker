@@ -5,7 +5,7 @@ from player import Player
 
 current_deck = Deck.get_deck()
 random.shuffle(current_deck)
-print(*current_deck, f" Всего {len(current_deck)} карт")
+# print(*current_deck, f" Всего {len(current_deck)} карт")
 
 
 def start_hand():
@@ -39,8 +39,8 @@ def get_all_player_hands(players_dict):
 
 
 all_start_hands = get_all_player_hands(players)
-print(all_start_hands)
-print(all_start_hands['Player 1'], type(all_start_hands['Player 1']))
+# print(all_start_hands)
+# print(all_start_hands['Player 1'], type(all_start_hands['Player 1']))
 
 
 def get_flop():
@@ -71,4 +71,6 @@ def get_river():
 
 river = get_river()
 print(f"RIVER: {', '.join(river)}")
-print(*current_deck, f" Всего {len(current_deck)} карт")
+# print(*current_deck, f" Всего {len(current_deck)} карт")
+
+print(all_start_hands)

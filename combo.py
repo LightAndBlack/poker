@@ -1,16 +1,12 @@
-from deck import Deck
-from card import Card
-from test_game import all_start_hands, num_active_players, players, river
+from test_game import players, river
 
 
 class Combo:
-
     # print(type(river))
     # print(players)
 
-    # for start_hand in players.values():
-    #     print(start_hand.pocket_hand, type(start_hand.pocket_hand))
-    #     print(river, type)
+    # print(start_hand.pocket_hand, type(start_hand.pocket_hand))
+    # print(river, type)
 
     @staticmethod
     def get_combined_hands(players_dict, river_cards):
@@ -29,8 +25,8 @@ class Combo:
         return combined_hands
 
     # for start_hand in players.values():
-    print(get_combined_hands(players, river))
-    print(get_combined_hands(players, river)['Player 1'])
+    # print(get_combined_hands(players, river))
+    # print(get_combined_hands(players, river)['Player 1'])
 
     # ниже пойдет логика сортировки рангов и мастей по убыванию, определение лучшей комбинации 5 карт из 7,
     # учитываю проверку: входят ли карманные руки в отсортированные по убыванию элементы списка, чтобы исключить
