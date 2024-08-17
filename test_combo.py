@@ -30,8 +30,10 @@ def sort_cards(cards):
     return sorted(cards, key=lambda card: Card.get_card_value(card), reverse=True)
 
 
+
 # showdown_cards = ['Td', '8c', '5h', 'Jd', 'Jc', 'Th', 'Qc']
 # sorted_cards = sort_cards(showdown_cards)
+
 
 royal = (
     'AcKcQcJcTc',
@@ -252,6 +254,7 @@ def evaluate_combo(sorted_cards_args):
         sum_ranks_combo = sum([Card.get_card_value(card) for card in sorted_cards_args[:5]])
         power_combo = HIGH_CARD + sum_ranks_combo
         return "Старшая карта", sorted_cards_args[:5]
+
 
 
 # print(evaluate_combo(sorted_cards))
