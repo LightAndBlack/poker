@@ -1,5 +1,18 @@
 from collections import Counter, defaultdict
 from card import Card
+from test_game import players, river
+
+
+def get_combined_hands(players_dict, river_cards):
+    combined_hands = {}
+    for player_name, player in players_dict.items():
+        combined_hand = player.pocket_hand + river_cards
+        combined_hands[player_name] = combined_hand
+    return combined_hands
+
+
+all_hands = get_combined_hands(players, river)
+print(all_hands)
 
 ROYAL_FLUSH = 1000
 STRAIGHT_FLUSH = 900
@@ -17,8 +30,8 @@ def sort_cards(cards):
     return sorted(cards, key=lambda card: Card.get_card_value(card), reverse=True)
 
 
-showdown_cards = ['2s', 'Ad', '5d', '4s', '6d', '8s', '3s']
-sorted_cards = sort_cards(showdown_cards)
+# showdown_cards = ['Td', '8c', '5h', 'Jd', 'Jc', 'Th', 'Qc']
+# sorted_cards = sort_cards(showdown_cards)
 
 royal = (
     'AcKcQcJcTc',
@@ -131,7 +144,7 @@ def is_straight_flush(showdown_cards_arg):
             return 0
 
 
-has_match = Counter([card[0] for card in sorted_cards])
+has_match = Counter([card[0] for card in sort_cards(all_hands['Player 1'])])
 has_quads = [k for k, v in has_match.items() if v == 4]
 has_set = [k for k, v in has_match.items() if v == 3]
 has_pair = [k for k, v in has_match.items() if v == 2]
@@ -215,30 +228,43 @@ def is_one_pair(sorted_cards_arg):
         return 0
 
 
-def evaluate_combo():
-    if is_royal_flush(sorted_cards):
-        return "Роял-флэш", *is_royal_flush(sorted_cards)
-    elif is_straight_flush(showdown_cards):
-        return "Стрит-флэш", is_straight_flush(showdown_cards)
-    elif is_quads(sorted_cards):
-        return "Каре: ", is_quads(sorted_cards)
-    elif is_full_house(sorted_cards):
-        return "Фул-хаус: ", is_full_house(sorted_cards)
-    elif is_flush(sorted_cards):
-        flush = is_flush(sorted_cards)
+def evaluate_combo(sorted_cards_args):
+    if is_royal_flush(sorted_cards_args):
+        return "Роял-флэш", *is_royal_flush(sorted_cards_args)
+    elif is_straight_flush(sorted_cards_args):
+        return "Стрит-флэш", is_straight_flush(sorted_cards_args)
+    elif is_quads(sorted_cards_args):
+        return "Каре: ", is_quads(sorted_cards_args)
+    elif is_full_house(sorted_cards_args):
+        return "Фул-хаус: ", is_full_house(sorted_cards_args)
+    elif is_flush(sorted_cards_args):
+        flush = is_flush(sorted_cards_args)
         return "Флэш", flush[-5:]
-    elif is_straight(showdown_cards):
-        return "Стрит", is_straight(showdown_cards)
-    elif is_set(sorted_cards):
-        return "Сет", is_set(sorted_cards)
-    elif is_two_pairs(sorted_cards):
-        return "Две пары", is_two_pairs(sorted_cards)
-    elif is_one_pair(sorted_cards):
-        return "Пара", is_one_pair(sorted_cards)
+    elif is_straight(sorted_cards_args):
+        return "Стрит", is_straight(sorted_cards_args)
+    elif is_set(sorted_cards_args):
+        return "Сет", is_set(sorted_cards_args)
+    elif is_two_pairs(sorted_cards_args):
+        return "Две пары", is_two_pairs(sorted_cards_args)
+    elif is_one_pair(sorted_cards_args):
+        return "Пара", is_one_pair(sorted_cards_args)
     else:
-        sum_ranks_combo = sum([Card.get_card_value(card) for card in sorted_cards[:5]])
+        sum_ranks_combo = sum([Card.get_card_value(card) for card in sorted_cards_args[:5]])
         power_combo = HIGH_CARD + sum_ranks_combo
-        return "Старшая карта", sorted_cards[:5]
+        return "Старшая карта", sorted_cards_args[:5]
 
 
-print(evaluate_combo())
+# print(evaluate_combo(sorted_cards))
+
+
+
+
+    # for start_hand in players.values():
+
+
+
+# print(all_hands['Player 1'])
+# print(sort_cards(all_hands['Player 1']))
+player1 = sort_cards(all_hands['Player 1'])
+print(player1, type(player1))
+print(evaluate_combo(player1))
