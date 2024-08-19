@@ -3,12 +3,12 @@ from typing import Dict
 from stack_player import Player
 
 POSITION_MAP = {
-    'BB': 1,
-    'SB': 2,
-    'BTN': 3,
-    'CO': 4,
-    'MP': 5,
-    'UTG': 6
+    0: 'BB',
+    1: 'SB',
+    2: 'BTN',
+    3: 'CO',
+    4: 'MP',
+    5: 'UTG'
 }
 
 BOARD_MAP = {
@@ -20,7 +20,9 @@ BOARD_MAP = {
     'BTN': 6
 }
 
-positions = ['BB', 'SB', 'BTN', 'CO', 'MP', 'UTG']
+# positions = ['BB', 'SB', 'BTN', 'CO', 'MP', 'UTG']
+positions = [0, 1, 2, 3, 4, 5]
+round_finished = False
 
 num_active_players = 6
 players = []
@@ -31,9 +33,10 @@ for i in range(num_active_players):
     # Запрашиваем бай-ин у пользователя
     # buy_in = float(input(f"Выберите бай-ин для {player_name} от 40 до 100бб: "))
     buy_in = 100
-    position = positions[i % len(positions)]
+    # position = positions[i % len(positions)]
+    position = positions[i]
 
-    player = Player(player_name, stack=buy_in, position=position)
+    player = Player(player_name, stack=buy_in, position=POSITION_MAP[position])
 
     players.append(player)
 
@@ -50,23 +53,16 @@ total_positions = num_active_players
 print(f"total_positions = {total_positions}")
 
 
-# Смена позиций после раунда
-def rotate_positions(players_arg, positions_arg):
-    # Сдвиг позиций на 1 вперед
-    positions_arg = positions_arg[-1:] + positions_arg[:-1]
-    # Обновление позиций у игроков
-    for idx, player_arg in enumerate(players):
-        player_arg.position = positions[idx % len(positions)]
-    return positions
+for i in range(num_active_players):
 
+    round_finished = True
+    print("НОВАЯ РАЗДАЧА: ")
 
-# Пример смены позиций после раунда
-positions = rotate_positions(players, positions)
+    if round_finished:
+        positions = [(i + 1) % num_active_players for i in positions]
 
-print("\nПосле смены позиций:")
-# players = rotate_positions(players)
-# for player in players:
-#     print(player)
+    print(positions, "\n")
+
 
 
 # TODO условия хода на префлопе - у кого старше индекс позиции, тот ходит первым
