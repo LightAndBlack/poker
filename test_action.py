@@ -18,11 +18,10 @@ BOARD_MAP = {
     'BTN': 6
 }
 
-num_active_players = 6
+num_active_players = 3
 players = []
-positions = [0, 1, 2, 3, 4, 5]
+positions = [0, 1, 2]
 round_finished = True
-
 
 # Инициализация игроков
 for i in range(num_active_players):
@@ -57,6 +56,48 @@ for i in range(num_active_players):
         print(f"Стек игрока {player.name}: {player.stack} бб, позиция: {player.position}")
     print("\n")
 
+players_to_remove = []
+raise_count = 0
+players_sort = sorted(players, key=lambda player_arg: players.index(player_arg), reverse=True)
+for player in players_sort:
+    if player.position == 'BB' and raise_count == 0:
+        player.action = float(input(
+            f" 0 - fold \n 1 - check \n 2 - call \n 3 - raise \n 4 - all_in\n Игрок {player.name} выберите одно из "
+            f"действий выше: "))
+    else:
+        player.action = float(input(f" 0 - fold\n 2 - call\n 3 - raise\n 4 - all_in\n Игрок {player.name} выберите "
+                                    f"одно из действий выше: "))
+    match player.action:
+        case 0:
+            print(f"Игрок {player.name} сбрасывает карты\n")
+            players_to_remove.append(player)
+            if len(players_sort) - len(players_to_remove) == 1 and raise_count == 0:
+                print(f"Игрок {players_sort[0].name} выиграл основной банк")
+                break
+        case 1 if player.position == "BB":
+            print(f"Игрок {player.name} говорит чек и пропускает ход\n")
+        case 2:
+            print(f"Игрок {player.name} уравнивает ставку\n")
+        case 3:
+            # print(f"Введите размер ставки от 2 до {player.stack} бб:")
+            player.bet = float(input(f"Введите размер ставки от 2 до {player.stack} бб: "))
+            print(f"Игрок {player.name} повышает ставку на {player.bet} бб\n")
+            raise_count += 1
+        case 4:
+            print(f"Игрок {player.name} идет all-in\n")
+    if player.action == 0:
+        pass
+        # print(f"Игрок {player.name} выбыл из игры")
+        # print(players_sort.index(player))
+        # players_sort.remove(player)
+
+for player in players_to_remove:
+    players_sort.remove(player)
+
+
+for player in players_sort:
+    print(f"Игрок{player.name} выигрывает основной банк")
+    print(player.name, player.stack, player.position)
 
 # TODO условия хода на префлопе - у кого старше индекс позиции, тот ходит первым
 # TODO условия хода после префлопа - первый ходит малый блайнд (SB), далее BB и остальные позиции в порядке

@@ -2,7 +2,7 @@ from typing import Optional
 
 
 class Player:
-    def __init__(self, player_name: Optional[str], stack: float, position: Optional[str] = None):
+    def __init__(self, player_name: Optional[str], stack: float, position: Optional[str] = None, bet: Optional[float] = None, action: Optional[any] = None):
         self.name = player_name
         self.stack = stack
         self.position = position
