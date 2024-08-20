@@ -83,10 +83,11 @@ def preflop_action():
                     f"действий выше: "))
                 if raise_count == 0 and player.action == 1:
                     call_players.append(player)
-                    print("ПЕРЕХОДИМ КО ФЛОПУ: ")
+                    print("\nПЕРЕХОДИМ КО ФЛОПУ: ")
                     for cpl in call_players:
                         print(f"count_players = {cpl.name}, position = {cpl.position}")
-                    flag = False
+                    return call_players, pot
+                    # flag = False
                 elif raise_count == 0 and player.action == 0:
                     fold_count += 1
                     flag = False
@@ -103,6 +104,9 @@ def preflop_action():
                     fold_count += 1
                     print(f"Игрок {player.name} сбрасывает карты\n")
                     players_to_remove.append(player)
+                    if player in call_players:
+                        call_players.remove(player)
+                        print(f" call_players.remove = {player.name}")
                     for player_removed in players_to_remove:
                         print(f"player_removed = {player_removed.name}")
                         print(f"count_of_removed_players = {len(players_to_remove)}")
@@ -118,11 +122,15 @@ def preflop_action():
                             flag = False
                             break
                         else:
-                            print("ПЕРЕХОДИМ КО ФЛОПУ: ")
+                            print("\nПЕРЕХОДИМ КО ФЛОПУ: ")
                             for cpl in call_players:
                                 print(f"count_players = {cpl.name}, position = {cpl.position}")
-                            flag = False
-                            break
+                            print(f"fold_count = {fold_count}")
+                            print(f"call_count = {call_count}")
+                            print(f"raise_count = {raise_count}")
+                            return call_players, pot
+                            # flag = False
+                            # break
                     elif players_raise and fold_count == count_players - 1:
                         print(f"Игрок {players_raise[0].name} выиграл основной банк")
                         flag = False
@@ -156,11 +164,12 @@ def preflop_action():
                     print(f"call_count = {call_count}")
                     print(f"raise_count = {raise_count}")
                     if players_raise and fold_count + raise_count + call_count == count_players:
-                        print("ПЕРЕХОДИМ КО ФЛОПУ: ")
+                        print("\nПЕРЕХОДИМ КО ФЛОПУ: ")
                         for cpl in call_players:
                             print(f"count_players = {cpl.name}, position = {cpl.position}")
-                        flag = False
-                        break
+                        return call_players, pot
+                        # flag = False
+                        # break
                     # print(f"next(iter(call_players) = {next(iter(call_players))}")
                     # if players_raise and next(iter(call_players)) == players_raise[0]:
                     #     print(f"next(iter(call_players) = {next(iter(call_players))}")
@@ -169,15 +178,16 @@ def preflop_action():
                 case 3:
                     # print(f"\npot = {pot} бб")
                     player.bet = float(input(f"Введите размер ставки от 2 до {player.stack} бб: "))
+                    player.share = player.bet
                     last_bet = player.bet
                     pot += last_bet
                     print(f"\npot = {pot} бб")
                     print(f"Игрок {player.name} повышает ставку на {last_bet} бб\n")
                     raise_count = 1
                     call_count = 0
-                    # players_raise.append(player)
-                    if raise_count:
-                        # call_players.clear()
+                    players_raise.append(player)
+                    if players_raise:
+                        call_players.clear()
                         # call_count = 0
                         players_raise.clear()
                     call_players.append(player)
@@ -211,9 +221,18 @@ def preflop_action():
 #     print(player.name, player.stack, player.position)
 
 
-preflop_action()
-print("ФЛОП: \n")
+# flop_players = preflop_action()[0]
+# pot_flop = preflop_action()[1]
 
+# print(f"Пот - {pot_flop}")
+# for player in flop_players:
+#     print(f"Игрок {player.name} на позиции {player.position} со стеком {player.stack}")
+# print(type(preflop_action()))
+flop_players, flop_pot = preflop_action()
+print("\nФЛОП: ")
+for plf in flop_players:
+    print(f"Игрок {plf.name} на позиции {plf.position} со стеком {plf.stack}")
+print(f"Пот на флопе - {flop_pot}")
 # position
 
 # TODO условия хода на префлопе - у кого старше индекс позиции, тот ходит первым
