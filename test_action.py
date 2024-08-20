@@ -83,6 +83,9 @@ def preflop_action():
                     f"действий выше: "))
                 if raise_count == 0 and player.action == 1:
                     call_players.append(player)
+                    print("ПЕРЕХОДИМ КО ФЛОПУ: ")
+                    for cpl in call_players:
+                        print(f"count_players = {cpl.name}, position = {cpl.position}")
                     flag = False
                 elif raise_count == 0 and player.action == 0:
                     fold_count += 1
@@ -116,6 +119,8 @@ def preflop_action():
                             break
                         else:
                             print("ПЕРЕХОДИМ КО ФЛОПУ: ")
+                            for cpl in call_players:
+                                print(f"count_players = {cpl.name}, position = {cpl.position}")
                             flag = False
                             break
                     elif players_raise and fold_count == count_players - 1:
@@ -152,7 +157,10 @@ def preflop_action():
                     print(f"raise_count = {raise_count}")
                     if players_raise and fold_count + raise_count + call_count == count_players:
                         print("ПЕРЕХОДИМ КО ФЛОПУ: ")
+                        for cpl in call_players:
+                            print(f"count_players = {cpl.name}, position = {cpl.position}")
                         flag = False
+                        break
                     # print(f"next(iter(call_players) = {next(iter(call_players))}")
                     # if players_raise and next(iter(call_players)) == players_raise[0]:
                     #     print(f"next(iter(call_players) = {next(iter(call_players))}")
@@ -205,6 +213,8 @@ def preflop_action():
 
 preflop_action()
 print("ФЛОП: \n")
+
+# position
 
 # TODO условия хода на префлопе - у кого старше индекс позиции, тот ходит первым
 # TODO условия хода после префлопа - первый ходит малый блайнд (SB), далее BB и остальные позиции в порядке
