@@ -178,9 +178,12 @@ def preflop_action():
                 case 3:
                     # print(f"\npot = {pot} бб")
                     player.bet = float(input(f"Введите размер ставки от 2 до {player.stack} бб: "))
-                    player.share = player.bet
+                    # dif = player.bet - player.share
                     last_bet = player.bet
-                    pot += last_bet
+                    pot += last_bet - player.share
+                    player.share = player.bet
+
+                    player.stack -= last_bet
                     print(f"\npot = {pot} бб")
                     print(f"Игрок {player.name} повышает ставку на {last_bet} бб\n")
                     raise_count = 1
