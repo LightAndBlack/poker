@@ -10,12 +10,12 @@ POSITION_MAP = {
 }
 
 BOARD_MAP = {
-    'SB': 1,
-    'BB': 2,
-    'UTG': 3,
-    'MP': 4,
-    'CO': 5,
-    'BTN': 6
+    'SB': 0,
+    'BB': 1,
+    'UTG': 2,
+    'MP': 3,
+    'CO': 4,
+    'BTN': 5
 }
 
 num_active_players = 3
@@ -79,8 +79,7 @@ def preflop_action():
             # print(f"player_position для игрока {player.name} = {player.position}, player.share = {player.share}")
             if player.position == 'BB' and not players_raise:
                 player.action = float(input(
-                    f" 0 - fold \n 1 - check \n 2 - call \n 3 - raise \n 4 - all_in\n \n pot = {pot} бб\n Игрок {player.name} выберите одно из "
-                    f"действий выше: "))
+                    f"Игрок {player.name} выберите действие (0 - fold, 1 - check, 2 - call, 3 - raise, 4 - all_in): "))
                 if raise_count == 0 and player.action == 1:
                     call_players.append(player)
                     print("\nПЕРЕХОДИМ КО ФЛОПУ: ")
@@ -93,8 +92,7 @@ def preflop_action():
                     flag = False
             else:
                 player.action = float(input(
-                    f" 0 - fold\n 2 - call\n 3 - raise\n 4 - all_in\n \n pot = {pot} бб\n Игрок {player.name} выберите "
-                    f"одно из действий выше: "))
+                    f"Игрок {player.name} выберите действие (0 - fold, 2 - call, 3 - raise, 4 - all_in): "))
             # print(f"pot = {pot} бб\n")
             # if call_players:
             #     for cpl in call_players:
@@ -162,11 +160,11 @@ def preflop_action():
                             print(f"call_players = {cpl}")
                     print(f"fold_count = {fold_count}")
                     print(f"call_count = {call_count}")
-                    print(f"raise_count = {raise_count}")
+                    print(f"raise_count = {raise_count}\n")
                     if players_raise and fold_count + raise_count + call_count == count_players:
                         print("\nПЕРЕХОДИМ КО ФЛОПУ: ")
                         for cpl in call_players:
-                            print(f"count_players = {cpl.name}, position = {cpl.position}")
+                            print(f"count_players = {cpl.name}, position = {cpl.position}\n")
                         return call_players, pot
                         # flag = False
                         # break
@@ -199,7 +197,7 @@ def preflop_action():
                         print(f"call_players = {cpl}")
                     print(f"fold_count = {fold_count}")
                     print(f"call_count = {call_count}")
-                    print(f"raise_count = {raise_count}")
+                    print(f"raise_count = {raise_count}\n")
                 case 4:
                     # print(f"\n pot = {pot} бб")
                     print(f"Игрок {player.name} идет all-in\n")
@@ -236,7 +234,179 @@ print("\nФЛОП: ")
 for plf in flop_players:
     print(f"Игрок {plf.name} на позиции {plf.position} со стеком {plf.stack}")
 print(f"Пот на флопе - {flop_pot}")
+
+
 # position
+
+def board_action(flop_players_arg, pot_arg):
+    flop_players_arg.sort(key=lambda p: BOARD_MAP[p.position])
+    count_players = len(flop_players_arg)
+    fold_count = 0
+    call_count = 0
+    raise_count = 0
+    players_to_remove = []
+    check_players = []
+    call_players = []
+    players_raise = []
+    flag = True
+    while flag:
+        for player in flop_players_arg:
+            player.share = 0
+            print(f"Игрок {player.name} (позиция {player.position}) ходит со стеком {player.stack} бб")
+            action = float(
+                input(f"{player.name}, выберите действие (0 - fold, 1 - check, 2 - call, 3 - raise, 4 - all_in): "))
+            match action:
+                case 0:
+                    fold_count += 1
+                    print(f"Игрок {player.name} сбрасывает карты\n")
+                    # players_to_remove.append(player)
+                    if player in call_players:
+                        call_players.remove(player)
+                        print(f"call_players.remove = {player.name}")
+                    for player_removed in players_to_remove:
+                        print(f"player_removed = {player_removed.name}")
+                        print(f"count_of_removed_players = {len(players_to_remove)}")
+                        print(f"players_sort[0].name = {flop_players_arg[0].name}\n")
+                        print()
+                    if len(flop_players_arg) - len(players_to_remove) == 1 and raise_count == 0:
+                        print(f"Игрок {flop_players_arg[-1].name} выиграл основной банк: {pot_arg} бб")
+                        return pot_arg
+                        # flag = False
+                        # break
+                    # elif len(players_sort) - fold_count == 1 and players_raise:
+                    elif players_raise and fold_count + raise_count + call_count == count_players:
+                        if fold_count == count_players - 1:
+                            print(f"Игрок {players_raise[0].name} выиграл основной банк: {pot_arg} бб")
+                            return pot_arg
+                            # flag = False
+                            # break
+                        else:
+                            # print("\nПЕРЕХОДИМ К ТЕРНУ: ")
+                            for cpl in call_players:
+                                print(f"count_players = {cpl.name}, position = {cpl.position}")
+                            print(f"fold_count = {fold_count}")
+                            print(f"call_count = {call_count}")
+                            print(f"raise_count = {raise_count}\n")
+                            return call_players, pot_arg
+                            # flag = False
+                            # break
+                    elif players_raise and fold_count == count_players - 1:
+                        print(f"Игрок {players_raise[0].name} выиграл основной банк: {pot_arg} бб")
+                        return pot_arg
+                        # flag = False
+                        # break
+                    print(f"fold_count = {fold_count}")
+                    print(f"call_count = {call_count}")
+                    print(f"raise_count = {raise_count}\n")
+                    print(f"\npot = {pot_arg} бб")
+                    if len(check_players) + fold_count == count_players:
+                        return check_players, pot_arg
+                case 1 if not players_raise:
+                    print(f"Игрок {player.name} говорит чек и пропускает ход\n")
+                    print(f"\npot = {pot_arg} бб")
+                    check_players.append(player)
+                    if len(check_players) == count_players or len(check_players) + fold_count == count_players:
+                        # print("\nПЕРЕХОДИМ К ТЕРНУ: ")
+                        for cpl in check_players:
+                            print(f"count_players = {cpl.name}, position = {cpl.position}")
+                        print(f"fold_count = {fold_count}")
+                        print(f"check_players = {check_players}")
+                        print(f"call_count = {call_count}")
+                        print(f"raise_count = {raise_count}")
+                        flop_players_arg.clear()
+                        return check_players, pot_arg
+                case 2:
+                    print(f"Игрок {player.name} уравнивает ставку\n")
+                    print(f"\npot = {pot_arg} бб")
+                    call_count += 1
+                    dif_to_call = last_bet - player.share
+                    player.share = dif_to_call
+                    pot_arg += dif_to_call
+                    player.stack -= dif_to_call
+                    print(f"player.stack = {player.stack}")
+                    print(f"\n pot = {pot_arg} бб, {player.name} stack = {player.stack}")
+                    call_players.append(player)
+                    if call_players:
+                        for cpl in call_players:
+                            print(f"call_players = {cpl}")
+                    print(f"fold_count = {fold_count}")
+                    print(f"call_count = {call_count}")
+                    print(f"raise_count = {raise_count}\n")
+                    if players_raise and fold_count + raise_count + call_count == count_players:
+                        # print("\nПЕРЕХОДИМ К ТЕРНУ: ")
+                        for cpl in call_players:
+                            print(f"count_players = {cpl.name}, position = {cpl.position}")
+                        return call_players, pot_arg
+                        # flag = False
+                        # break
+                    # print(f"next(iter(call_players) = {next(iter(call_players))}")
+                    # if players_raise and next(iter(call_players)) == players_raise[0]:
+                    #     print(f"next(iter(call_players) = {next(iter(call_players))}")
+                    #     flag = False
+                    # players_raise.clear()
+                case 3:
+                    # print(f"\npot = {pot} бб")
+                    player.bet = float(input(f"Введите размер ставки от 2 до {player.stack} бб: "))
+                    # dif = player.bet - player.share
+                    last_bet = player.bet
+                    pot_arg += last_bet - player.share
+                    player.share = player.bet
+
+                    player.stack -= last_bet
+                    print(f"\npot = {pot_arg} бб")
+                    print(f"Игрок {player.name} повышает ставку на {last_bet} бб\n")
+                    raise_count = 1
+                    call_count = 0
+                    players_raise.append(player)
+                    if players_raise:
+                        call_players.clear()
+                        check_players.clear()
+                        # call_count = 0
+                        players_raise.clear()
+                    call_players.append(player)
+                    players_raise.append(player)
+                    for cpl in call_players:
+                        print(f"call_players = {cpl}")
+                    print(f"fold_count = {fold_count}")
+                    print(f"call_count = {call_count}")
+                    print(f"raise_count = {raise_count}\n")
+                case 4:
+                    # print(f"\n pot = {pot} бб")
+                    print(f"Игрок {player.name} идет all-in\n")
+    return flop_players_arg, pot_arg
+
+
+flop_result = board_action(flop_players, flop_pot)
+
+# Проверка типа результата
+if isinstance(flop_result, tuple):
+    turn_players, turn_pot = flop_result
+    print("\nПЕРЕХОДИМ К ТЕРНУ: \n")
+    turn_result = board_action(turn_players, turn_pot)
+    if isinstance(turn_result, tuple):
+        river_players, river_pot = turn_result
+        print("\nПЕРЕХОДИМ К РИВЕРУ: \n")
+        river_result = board_action(river_players, river_pot)
+        if isinstance(river_result, tuple):
+            river_players, river_pot = river_result
+            print("\nОТКРЫВАЕМ КАРТЫ: \n")
+#     if river_players:
+#         print("\nВСКРЫВАЕМ КАРТЫ: \n")
+#         # Вызываем действие для терна
+#         board_action(river_players, river_pot)
+#     else:
+#         print("Все игроки сбросили карты, игра завершена.")
+# else:
+#     print("Игра завершена.")
+
+# print(board_action(flop_players, flop_pot))
+# if type(board_action(flop_players, flop_pot)) == tuple:
+#     print("\nПЕРЕХОДИМ К ТЕРНУ: \n")
+
+
+# turn_players, turn_pot = board_action(flop_players, flop_pot)
+
+# board_action(turn_players, turn_pot)
 
 # TODO условия хода на префлопе - у кого старше индекс позиции, тот ходит первым
 # TODO условия хода после префлопа - первый ходит малый блайнд (SB), далее BB и остальные позиции в порядке
