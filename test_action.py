@@ -1,4 +1,6 @@
 from stack_player import Player
+from test_game import start_hand, get_river, deck
+from test_combo import all_hands, evaluate_combo, sort_cards
 
 POSITION_MAP = {
     0: 'BB',
@@ -18,9 +20,9 @@ BOARD_MAP = {
     'BTN': 5
 }
 
-num_active_players = 3
+num_active_players = 6
 players = []
-positions = [0, 1, 2]
+positions = [0, 1, 2, 3, 4, 5]
 round_finished = True
 
 # Инициализация игроков
@@ -49,6 +51,7 @@ for i in range(num_active_players):
         players[idx].position = POSITION_MAP[pos]
 
     for player in players:
+        player.showdown_status = True
         if player.position == 'BB':
             player.stack = player.stack - 1
             player.share = 1
@@ -61,6 +64,25 @@ for i in range(num_active_players):
     print("\n")
 
 players_to_remove = []
+final_hands = all_hands.values()
+print(f"final_hands = {final_hands}")
+for idx, player in enumerate(players):
+    player.pocket_cards = list(all_hands.values())[idx][0:2]
+    player.final_combo = list(all_hands.values())[idx]
+    # print(player.name, player.position, player.stack, evaluate_combo(sort_cards(player.final_combo)))
+    # print(f"final_hands = {final_hands}")
+    # player.pocket_cards = final_hand[0:2]
+
+river_cards = get_river()[0:5]
+turn_cards = river_cards[0:4]
+flop_cards = get_river()[0:3]
+print(f"all_hands = {all_hands}")
+
+# print(f"all_start_hands = {all_start_hands}")
+# print(f"deck = {deck}")
+print(flop_cards)
+print(turn_cards)
+print(river_cards)
 
 
 def preflop_action():
@@ -73,10 +95,13 @@ def preflop_action():
     last_bet = 1
     players_raise = []
     call_players = []
+    all_in_players = []
     flag = True
     while flag:
         for player in players_sort:
-            # print(f"player_position для игрока {player.name} = {player.position}, player.share = {player.share}")
+            print("Ваша рука - ", *player.pocket_cards)
+            print(
+                f"player_position для игрока {player.name} = {player.position}, player.share = {player.share}, player_stack = {player.stack}")
             if player.position == 'BB' and not players_raise:
                 player.action = float(input(
                     f"Игрок {player.name} выберите действие (0 - fold, 1 - check, 2 - call, 3 - raise, 4 - all_in): "))
@@ -90,6 +115,8 @@ def preflop_action():
                 elif raise_count == 0 and player.action == 0:
                     fold_count += 1
                     flag = False
+            elif player in players_to_remove:
+                continue
             else:
                 player.action = float(input(
                     f"Игрок {player.name} выберите действие (0 - fold, 2 - call, 3 - raise, 4 - all_in): "))
@@ -100,16 +127,17 @@ def preflop_action():
             match player.action:
                 case 0:
                     fold_count += 1
+                    player.showdown_status = False
                     print(f"Игрок {player.name} сбрасывает карты\n")
                     players_to_remove.append(player)
-                    if player in call_players:
-                        call_players.remove(player)
-                        print(f" call_players.remove = {player.name}")
-                    for player_removed in players_to_remove:
-                        print(f"player_removed = {player_removed.name}")
-                        print(f"count_of_removed_players = {len(players_to_remove)}")
-                        print(f"players_sort[0].name = {players_sort[0].name}")
-                        print()
+                    # if player in call_players:
+                    #     call_players.remove(player)
+                    #     print(f" call_players.remove = {player.name}")
+                    # for player_removed in players_to_remove:
+                    #     print(f"player_removed = {player_removed.name}")
+                    #     print(f"count_of_removed_players = {len(players_to_remove)}")
+                    #     print(f"players_sort[0].name = {players_sort[0].name}")
+                    #     print()
                     if len(players_sort) - len(players_to_remove) == 1 and raise_count == 0:
                         print(f"Игрок {players_sort[-1].name} выиграл основной банк")
                         flag = False
@@ -148,10 +176,19 @@ def preflop_action():
                 case 2:
                     print(f"Игрок {player.name} уравнивает ставку\n")
                     call_count += 1
-                    dif_to_call = last_bet - player.share
-                    player.share = dif_to_call
+                    if all_in_players and player.stack <= call_all_in:
+                        dif_to_call = player.stack
+                        player.stack = 0
+                    elif all_in_players and player.stack > call_all_in:
+                        dif_to_call = call_all_in
+                        player.stack -= call_all_in
+                    else:
+                        dif_to_call = last_bet - player.share
+                        player.stack -= dif_to_call
+                    player.share += dif_to_call
+                    print(f"dif_to_call = {dif_to_call}")
                     pot += dif_to_call
-                    player.stack -= dif_to_call
+                    # player.stack -= dif_to_call
                     print(f"player.stack = {player.stack}")
                     print(f"\n pot = {pot} бб, {player.name} stack = {player.stack}")
                     call_players.append(player)
@@ -176,14 +213,35 @@ def preflop_action():
                 case 3:
                     # print(f"\npot = {pot} бб")
                     player.bet = float(input(f"Введите размер ставки от 2 до {player.stack} бб: "))
-                    # dif = player.bet - player.share
+                    dif = player.bet - player.share
+                    # player.share += dif
                     last_bet = player.bet
-                    pot += last_bet - player.share
+                    # pot += last_bet - player.share
+                    if player.position == 'SB' and player.share <= 1:
+                        player.stack -= player.bet
+                        pot += last_bet - player.share
+                        print(f"pot = {pot}")
+                    elif player.position == 'SB' and player.share > 1:
+                        player.stack -= dif
+                        pot += last_bet - player.share
+                        print(f"pot = {pot}")
+                    elif player.position == 'SB' and player.bet == player.stack:
+                        player.stack -= player.bet
+                        pot += last_bet
+                    elif player.position == 'BB' and player.share == 1:
+                        player.stack -= player.bet
+                        pot += last_bet - player.share
+                    elif player.position == 'BB' and player.share > 1:
+                        player.stack -= player.bet
+                        pot += last_bet
+                    else:
+                        player.stack -= player.bet + player.share
+                        pot += last_bet - player.share
+                        print(f"pot = {pot}")
                     player.share = player.bet
 
-                    player.stack -= last_bet
                     print(f"\npot = {pot} бб")
-                    print(f"Игрок {player.name} повышает ставку на {last_bet} бб\n")
+                    print(f"Игрок {player.name} ставит {last_bet} бб, текущий стек = {player.stack} \n")
                     raise_count = 1
                     call_count = 0
                     players_raise.append(player)
@@ -198,9 +256,16 @@ def preflop_action():
                     print(f"fold_count = {fold_count}")
                     print(f"call_count = {call_count}")
                     print(f"raise_count = {raise_count}\n")
+                    if player.stack == 0:
+                        print(
+                            f"Игрок {player.name} на позиции {player.position} идет all-in, стек игрока = {player.stack}, текущий банк = {pot}\n")
+                        all_in_players.append(player)
+                        call_all_in = player.bet
                 case 4:
                     # print(f"\n pot = {pot} бб")
-                    print(f"Игрок {player.name} идет all-in\n")
+                    print(
+                        f"Игрок {player.name} на позиции {player.position}идет all-in, стек игрока = {player.stack}, текущий банк = {pot}\n")
+
             # if len(players_sort) - fold_count == 1 and raise_count == 0:
             #     print(f"Игрок {players_sort[-1].name} выиграл основной банк")
             #     break
@@ -229,11 +294,11 @@ def preflop_action():
 # for player in flop_players:
 #     print(f"Игрок {player.name} на позиции {player.position} со стеком {player.stack}")
 # print(type(preflop_action()))
-flop_players, flop_pot = preflop_action()
-print("\nФЛОП: ")
-for plf in flop_players:
-    print(f"Игрок {plf.name} на позиции {plf.position} со стеком {plf.stack}")
-print(f"Пот на флопе - {flop_pot}")
+# flop_players, flop_pot = preflop_action()
+# print("\nФЛОП: ")
+# for plf in flop_players:
+#     print(f"Игрок {plf.name} на позиции {plf.position} со стеком {plf.stack}")
+# print(f"Пот на флопе - {flop_pot}")
 
 
 # position
@@ -248,26 +313,39 @@ def board_action(flop_players_arg, pot_arg):
     check_players = []
     call_players = []
     players_raise = []
+    all_in_players = []
+    action = 1
     flag = True
     while flag:
         for player in flop_players_arg:
-            player.share = 0
+            if len(all_in_players) == len(flop_players_arg):
+                return all_in_players, pot_arg
+            if player.stack == 0:
+                all_in_players.append(player)
+                continue
+            if not raise_count:
+                player.share = 0
+            print("Ваша рука - ", *player.pocket_cards)
             print(f"Игрок {player.name} (позиция {player.position}) ходит со стеком {player.stack} бб")
-            action = float(
-                input(f"{player.name}, выберите действие (0 - fold, 1 - check, 2 - call, 3 - raise, 4 - all_in): "))
+            if player in players_to_remove:
+                continue
+            elif player not in all_in_players:
+                action = float(
+                    input(f"{player.name}, выберите действие (0 - fold, 1 - check, 2 - call, 3 - raise, 4 - all_in): "))
             match action:
                 case 0:
                     fold_count += 1
+                    player.showdown_status = False
                     print(f"Игрок {player.name} сбрасывает карты\n")
-                    # players_to_remove.append(player)
-                    if player in call_players:
-                        call_players.remove(player)
-                        print(f"call_players.remove = {player.name}")
-                    for player_removed in players_to_remove:
-                        print(f"player_removed = {player_removed.name}")
-                        print(f"count_of_removed_players = {len(players_to_remove)}")
-                        print(f"players_sort[0].name = {flop_players_arg[0].name}\n")
-                        print()
+                    players_to_remove.append(player)
+                    # if player in call_players:
+                    #     call_players.remove(player)
+                    #     print(f"call_players.remove = {player.name}")
+                    # for player_removed in players_to_remove:
+                    #     print(f"player_removed = {player_removed.name}")
+                    #     print(f"count_of_removed_players = {len(players_to_remove)}")
+                    #     print(f"players_sort[0].name = {flop_players_arg[0].name}\n")
+                    #     print()
                     if len(flop_players_arg) - len(players_to_remove) == 1 and raise_count == 0:
                         print(f"Игрок {flop_players_arg[-1].name} выиграл основной банк: {pot_arg} бб")
                         return pot_arg
@@ -354,7 +432,7 @@ def board_action(flop_players_arg, pot_arg):
 
                     player.stack -= last_bet
                     print(f"\npot = {pot_arg} бб")
-                    print(f"Игрок {player.name} повышает ставку на {last_bet} бб\n")
+                    print(f"Игрок {player.name} ставит {last_bet} бб\n")
                     raise_count = 1
                     call_count = 0
                     players_raise.append(player)
@@ -376,20 +454,32 @@ def board_action(flop_players_arg, pot_arg):
     return flop_players_arg, pot_arg
 
 
-flop_result = board_action(flop_players, flop_pot)
+preflop_result = preflop_action()
 
 # Проверка типа результата
-if isinstance(flop_result, tuple):
-    turn_players, turn_pot = flop_result
-    print("\nПЕРЕХОДИМ К ТЕРНУ: \n")
-    turn_result = board_action(turn_players, turn_pot)
-    if isinstance(turn_result, tuple):
-        river_players, river_pot = turn_result
-        print("\nПЕРЕХОДИМ К РИВЕРУ: \n")
-        river_result = board_action(river_players, river_pot)
-        if isinstance(river_result, tuple):
-            river_players, river_pot = river_result
-            print("\nОТКРЫВАЕМ КАРТЫ: \n")
+if isinstance(preflop_result, tuple):
+    flop_players, flop_pot = preflop_result
+    print("\nПЕРЕХОДИМ К ФЛОПУ: \n")
+    print("ФЛОП: ", *flop_cards)
+    flop_result = board_action(flop_players, flop_pot)
+    # Проверка типа результата
+    if isinstance(flop_result, tuple):
+        turn_players, turn_pot = flop_result
+        print("\nПЕРЕХОДИМ К ТЕРНУ: \n")
+        print("ТЕРН: ", *turn_cards)
+        turn_result = board_action(turn_players, turn_pot)
+        if isinstance(turn_result, tuple):
+            river_players, river_pot = turn_result
+            print("\nПЕРЕХОДИМ К РИВЕРУ: \n")
+            print("РИВЕР: ", *river_cards)
+            river_result = board_action(river_players, river_pot)
+            if isinstance(river_result, tuple):
+                river_players, river_pot = river_result
+                print("\nОТКРЫВАЕМ КАРТЫ: \n")
+                for player in river_players:
+                    if player.showdown_status:
+                        print(player.name, player.position, player.stack, evaluate_combo(sort_cards(player.final_combo)))
+
 #     if river_players:
 #         print("\nВСКРЫВАЕМ КАРТЫ: \n")
 #         # Вызываем действие для терна
@@ -408,7 +498,10 @@ if isinstance(flop_result, tuple):
 
 # board_action(turn_players, turn_pot)
 
-# TODO условия хода на префлопе - у кого старше индекс позиции, тот ходит первым
-# TODO условия хода после префлопа - первый ходит малый блайнд (SB), далее BB и остальные позиции в порядке
-# TODO их индексов. КРОМЕ ХЕДЗ-АПА. Там первый ходит ББ!!!
-# TODO создать словари для позиции ПРЕФЛОП и ПОСЛЕ ПРЕФЛОПА!!!
+# TODO Тестировать стеки блайндов на колах (B&B), исправлять ошибки - см. отчет по тестам
+# TODO Определение победителя или ничьей, вывод и банк
+# TODO Побочные банки, победитель внес больше, меньше. Определение побочных победителей
+# TODO хэдз-ап
+# TODO рефакторинг кода
+# TODO оптимизация - битовые маски и сдвиги
+

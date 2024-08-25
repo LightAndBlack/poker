@@ -5,6 +5,8 @@ from player import Player
 
 current_deck = Deck.get_deck()
 random.shuffle(current_deck)
+deck = current_deck
+print(f"deck = {deck}")
 # print(*current_deck, f" Всего {len(current_deck)} карт")
 
 
