@@ -91,6 +91,7 @@ def preflop_action():
     raise_count = 0
     call_count = 0
     fold_count = 0
+    all_in_count = 0
     pot = 1.5
     last_bet = 1
     players_raise = []
@@ -177,13 +178,27 @@ def preflop_action():
                     print(f"Игрок {player.name} уравнивает ставку\n")
                     call_count += 1
                     if all_in_players and player.stack <= call_all_in:
+                        all_in_players.append(player)
                         dif_to_call = player.stack
+                        all_in_count += 1
                         player.stack = 0
+                        pot += dif_to_call
+                        if all_in_count + fold_count == count_players:
+                            print(f"Игрок {player.name} на позиции {player.position} идет all-in, стек игрока = {player.stack}, пот = {pot} ")
+                            print("\nПЕРЕХОДИМ КО ФЛОПУ: ")
+                            for cpl in all_in_players:
+                                print(f"all_in_players = {cpl.name}, position = {cpl.position}, карты = {cpl.pocket_cards}\n")
+                            return all_in_players, pot
+                        print(f"Игрок {player.name} на позиции {player.position} идет all-in, стек игрока = {player.stack}, пот = {pot} ")
+                        continue
                     elif all_in_players and player.stack > call_all_in:
                         dif_to_call = call_all_in
                         player.stack -= call_all_in
                     else:
                         dif_to_call = last_bet - player.share
+                    if player.position == 'BB' or player.position == 'SB' and player.share <= 1:
+                        player.stack -= last_bet
+                    else:
                         player.stack -= dif_to_call
                     player.share += dif_to_call
                     print(f"dif_to_call = {dif_to_call}")
@@ -213,6 +228,14 @@ def preflop_action():
                 case 3:
                     # print(f"\npot = {pot} бб")
                     player.bet = float(input(f"Введите размер ставки от 2 до {player.stack} бб: "))
+                    if player.bet == player.stack:
+                        all_in_players.append(player)
+                        all_in_count += 1
+                        player.stack = 0
+                        pot += player.bet
+                        call_all_in = player.bet
+                        print(f"Игрок {player.name} ставит {player.bet} бб и идет all-in остаток игрока = {player.stack}, ПОТ = {pot}")
+                        continue
                     dif = player.bet - player.share
                     # player.share += dif
                     last_bet = player.bet
@@ -232,12 +255,15 @@ def preflop_action():
                         player.stack -= player.bet
                         pot += last_bet - player.share
                     elif player.position == 'BB' and player.share > 1:
-                        player.stack -= player.bet
-                        pot += last_bet
-                    else:
-                        player.stack -= player.bet + player.share
+                        player.stack -= player.bet - player.share
                         pot += last_bet - player.share
-                        print(f"pot = {pot}")
+                    # elif player.position == 'BB' and player.position == 'SB':
+                    #     player.stack -= player.bet + player.share
+                    #     pot += last_bet - player.share
+                    #     print(f"pot = {pot}")
+                    else:
+                        pot += last_bet - player.share
+                        player.stack -= dif
                     player.share = player.bet
 
                     print(f"\npot = {pot} бб")
@@ -498,7 +524,7 @@ if isinstance(preflop_result, tuple):
 
 # board_action(turn_players, turn_pot)
 
-# TODO Тестировать стеки блайндов на колах (B&B), исправлять ошибки - см. отчет по тестам
+# TODO - ВРОДЕ ПОФИКСИЛ Тестировать стеки блайндов на колах (B&B), исправлять ошибки - см. отчет по тестам
 # TODO Определение победителя или ничьей, вывод и банк
 # TODO Побочные банки, победитель внес больше, меньше. Определение побочных победителей
 # TODO хэдз-ап
