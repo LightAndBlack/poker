@@ -282,7 +282,7 @@ def evaluate_combo(sorted_cards_args):
     else:
         sum_ranks_combo = sum([Card.get_card_value(card) for card in sorted_cards_args[:5]])
         power_combo = HIGH_CARD + sum_ranks_combo
-        return "Старшая карта", sorted_cards_args[:5], power_combo
+        return "Старшая карта", (sorted_cards_args[:5], power_combo)
 
 
 print(evaluate_combo(sorted_cards))

@@ -516,10 +516,40 @@ if isinstance(preflop_result, tuple):
             if isinstance(river_result, tuple):
                 river_players, river_pot = river_result
                 print("\nОТКРЫВАЕМ КАРТЫ: \n")
+                win_power = 0
+                win_players = []
+                win_combo = []
+                name_win_combo = ''
                 for player in river_players:
                     if player.showdown_status:
-                        print(player.name, player.position, player.stack,
-                              evaluate_combo(sort_cards(player.final_combo)))
+                        combo_power = evaluate_combo(sort_cards(player.final_combo))
+                        print(f"combo_power = {combo_power}")
+                        combo = combo_power[0]
+                        power = int(combo_power[1][1])
+                        if power > win_power:
+                            win_power = power
+                            win_players.clear()
+                            win_combo.clear()
+                            win_players.append(player)
+                            win_combo.extend(combo_power[1][0])
+                            name_win_combo = combo
+                        elif win_power == power:
+                            win_players.append(player)
+                        print(f"Игрок {player.name} на позиции {player.position} с оставшимся стеком {player.stack} бб собрал комбинацию {combo} - {combo_power[1][0]}")
+                        # print(player.name, player.position, player.stack, evaluate_combo(sort_cards(player.final_combo)))
+                print()
+                print()
+                if len(win_players) == 1:
+                    win_players[0].stack += river_pot
+                    print(f"Игрок {win_players[0].name} на позиции {win_players[0].position} ВЫИГРАЛ основной банк {river_pot} бб c комбинацией {name_win_combo} - {win_combo}")
+                    print(f"Стек игрока {win_players[0].name} составляет {win_players[0].stack} бб")
+                else:
+                    print("Игроки ПОДЕЛИЛИ основной банк:")
+                    for player in win_players:
+                        player.stack += round(river_pot/len(win_players), 2)
+                        print(f"Игрок {player.name} на позиции {player.position} ВЫИГРАЛ основной банк {player.stack} бб c комбинацией {name_win_combo} - {win_combo}")
+                        print(f"Стек игрока {player.name} составляет {player.stack} бб")
+
 
 #     if river_players:
 #         print("\nВСКРЫВАЕМ КАРТЫ: \n")
@@ -540,7 +570,7 @@ if isinstance(preflop_result, tuple):
 # board_action(turn_players, turn_pot)
 
 # TODO - ВРОДЕ ПОФИКСИЛ Тестировать стеки блайндов на колах (B&B), исправлять ошибки - см. отчет по тестам
-# TODO Определение победителя или ничьей, вывод и банк
+# TODO - ВРОДЕ КАК СДЕЛАЛ Определение победителя или ничьей, вывод и банк
 # TODO Побочные банки, победитель внес больше, меньше. Определение побочных победителей
 # TODO хэдз-ап
 # TODO рефакторинг кода
