@@ -31,8 +31,8 @@ def sort_cards(cards):
     return sorted(cards, key=lambda card: Card.get_card_value(card), reverse=True)
 
 
-# showdown_cards = ['5c', '3d', '2d', '7c', 'Ah', 'Qs', 'Qc']
-# sorted_cards = sort_cards(showdown_cards)
+showdown_cards = ['8s', 'Td', '9s', '9d', 'Ts', '8h', 'Th']
+sorted_cards = sort_cards(showdown_cards)
 
 royal = (
     'AcKcQcJcTc',
@@ -61,7 +61,7 @@ def is_flush(sorted_cards_arg):
     if has_flush:
         flush_cards = [flush_card for flush_card in sorted_cards_arg if flush_card[1] == has_flush[0]]
         power_flush = FLUSH + Card.get_card_value(flush_cards[0])
-        return sorted(flush_cards, key=lambda card: Card.get_card_value(card))
+        return sorted(flush_cards, key=lambda card: Card.get_card_value(card)), power_flush
     else:
         return 0
 
@@ -89,27 +89,29 @@ def is_straight(showdown_cards_arg):
             power_street = STRAIGHT + Card.get_rank_value(final_ranks[6])
             for rank in final_ranks[2:7]:
                 straight_cards.append(rank_to_cards[rank][0])
-            return straight_cards
+            return straight_cards, power_street
         elif final_ranks[1:6] in straights:
             power_street = STRAIGHT + Card.get_rank_value(final_ranks[5])
             for rank in final_ranks[1:6]:
                 straight_cards.append(rank_to_cards[rank][0])
-            return straight_cards
+            return straight_cards, power_street
         elif final_ranks[0:5] in straights:
             power_street = STRAIGHT + Card.get_rank_value(final_ranks[4])
             for rank in final_ranks[0:5]:
                 straight_cards.append(rank_to_cards[rank][0])
-            return straight_cards
+            return straight_cards, power_street
         else:
             return 0
 
 
 def is_straight_flush(showdown_cards_arg):
-    if not is_flush(showdown_cards_arg):
+    flush_result = is_flush(showdown_cards_arg)
+    if flush_result == 0:
         return 0
     else:
+        flush_cards = flush_result[0]
         rank_to_cards = defaultdict(list)
-    for card in is_flush(showdown_cards_arg):
+    for card in flush_cards:
         rank = card[:-1]
         rank_to_cards[rank].append(card)
     unique_ranks = set(rank_to_cards.keys())
@@ -130,17 +132,17 @@ def is_straight_flush(showdown_cards_arg):
             power_street = STRAIGHT_FLUSH + Card.get_rank_value(final_ranks[6])
             for rank in final_ranks[2:7]:
                 straight_cards.append(rank_to_cards[rank][0])
-            return straight_cards
+            return straight_cards, power_street
         elif final_ranks[1:6] in straights:
             power_street = STRAIGHT_FLUSH + Card.get_rank_value(final_ranks[5])
             for rank in final_ranks[1:6]:
                 straight_cards.append(rank_to_cards[rank][0])
-            return straight_cards
+            return straight_cards, power_street
         elif final_ranks[0:5] in straights:
             power_street = STRAIGHT_FLUSH + Card.get_rank_value(final_ranks[4])
             for rank in final_ranks[0:5]:
                 straight_cards.append(rank_to_cards[rank][0])
-            return straight_cards
+            return straight_cards, power_street
         else:
             return 0
 
@@ -178,7 +180,7 @@ def is_quads(sorted_cards_arg):
         else:
             quads.insert(0, sorted_cards_arg[0])
             power_combo = FOUR_CARDS + Card.get_card_value(quads[0]) + Card.get_card_value(quads[4]) * 4
-        return quads
+        return quads, power_combo
     else:
         return 0
 
@@ -190,12 +192,13 @@ def is_full_house(sorted_cards_arg):
     if has_set and has_pair:
         three_equal_ranks = [card for card in sorted_cards_arg if card[0] == has_set[0]]
         two_equal_ranks = [card for card in sorted_cards_arg if card[0] == has_pair[0]]
-        return three_equal_ranks + two_equal_ranks
+        power_combo = FULL_HOUSE + Card.get_rank_value(has_set[0]) * 3 + Card.get_rank_value(has_pair[0]) * 2/100
+        return three_equal_ranks + two_equal_ranks, power_combo
     elif has_set and len(has_set) == 2:
         three_equal_ranks = [card for card in sorted_cards_arg if card[0] == has_set[0]]
         two_equal_ranks = [card for card in sorted_cards_arg if card[0] == has_set[1]]
-        power_combo = FULL_HOUSE + Card.get_rank_value(has_set[0]) * 3 + Card.get_rank_value(has_set[1]) * 2
-        return three_equal_ranks + two_equal_ranks[:-1]
+        power_combo = FULL_HOUSE + Card.get_rank_value(has_set[0]) * 3 + Card.get_rank_value(has_set[1]) * 2/100
+        return three_equal_ranks + two_equal_ranks[:-1], power_combo
     else:
         return 0
 
@@ -215,7 +218,7 @@ def is_set(sorted_cards_arg):
             set_combo.append(sorted_cards_arg[0])
         ranks_combo = sum([Card.get_card_value(rank) for rank in set_combo])
         power_combo = SET + ranks_combo
-        return set_combo
+        return set_combo, power_combo
     else:
         return 0
 
@@ -236,7 +239,7 @@ def is_two_pairs(sorted_cards_arg):
             two_pairs.append(sorted_cards_arg[4])
         sum_ranks_combo = sum([Card.get_card_value(card) for card in two_pairs])
         power_combo = TWO_PAIRS + sum_ranks_combo
-        return two_pairs
+        return two_pairs, power_combo
     else:
         return 0
 
@@ -251,38 +254,38 @@ def is_one_pair(sorted_cards_arg):
         one_pair_combo = one_pair + remaining_cards[:3]
         sum_ranks_combo = sum([Card.get_card_value(card) for card in one_pair_combo])
         power_combo = ONE_PAIR + sum_ranks_combo
-        return one_pair_combo
+        return one_pair_combo, power_combo
     else:
         return 0
 
 
 def evaluate_combo(sorted_cards_args):
     if is_royal_flush(sorted_cards_args):
-        return "Роял-флэш", *is_royal_flush(sorted_cards_args)
+        return "Роял-флэш    ", *is_royal_flush(sorted_cards_args), ROYAL_FLUSH
     elif is_straight_flush(sorted_cards_args):
-        return "Стрит-флэш", is_straight_flush(sorted_cards_args)
+        return "Стрит-флэш   ", is_straight_flush(sorted_cards_args)
     elif is_quads(sorted_cards_args):
-        return "Каре: ", is_quads(sorted_cards_args)
+        return "Каре         ", is_quads(sorted_cards_args)
     elif is_full_house(sorted_cards_args):
-        return "Фул-хаус: ", is_full_house(sorted_cards_args)
+        return "Фул-хаус     ", is_full_house(sorted_cards_args)
     elif is_flush(sorted_cards_args):
         flush = is_flush(sorted_cards_args)
-        return "Флэш", flush[-5:]
+        return "Флэш         ", flush[-5:]
     elif is_straight(sorted_cards_args):
-        return "Стрит", is_straight(sorted_cards_args)
+        return "Стрит        ", is_straight(sorted_cards_args)
     elif is_set(sorted_cards_args):
-        return "Сет", is_set(sorted_cards_args)
+        return "Сет          ", is_set(sorted_cards_args)
     elif is_two_pairs(sorted_cards_args):
-        return "Две пары", is_two_pairs(sorted_cards_args)
+        return "Две пары     ", is_two_pairs(sorted_cards_args)
     elif is_one_pair(sorted_cards_args):
-        return "Пара", is_one_pair(sorted_cards_args)
+        return "Пара         ", is_one_pair(sorted_cards_args)
     else:
         sum_ranks_combo = sum([Card.get_card_value(card) for card in sorted_cards_args[:5]])
         power_combo = HIGH_CARD + sum_ranks_combo
-        return "Старшая карта", sorted_cards_args[:5]
+        return "Старшая карта", sorted_cards_args[:5], power_combo
 
 
-# print(evaluate_combo(sorted_cards))
+print(evaluate_combo(sorted_cards))
 
 # for start_hand in players.values():
 
