@@ -31,7 +31,7 @@ def sort_cards(cards):
     return sorted(cards, key=lambda card: Card.get_card_value(card), reverse=True)
 
 
-showdown_cards = ['8s', 'Td', '9s', '9d', 'Ts', '8h', 'Th']
+showdown_cards = ['8h', '8d', '7d', '2c', 'Kd', '9c', 'Ts']
 sorted_cards = sort_cards(showdown_cards)
 
 royal = (
@@ -237,8 +237,11 @@ def is_two_pairs(sorted_cards_arg):
             two_pairs.append(sorted_cards_arg[2])
         else:
             two_pairs.append(sorted_cards_arg[4])
-        sum_ranks_combo = sum([Card.get_card_value(card) for card in two_pairs])
-        power_combo = TWO_PAIRS + sum_ranks_combo
+        # sum_ranks_combo = sum([Card.get_card_value(card) for card in two_pairs])
+        power_first_pair = Card.get_card_value(two_pairs[0]) + Card.get_card_value(two_pairs[1])
+        power_second_pair = (Card.get_card_value(two_pairs[2]) + Card.get_card_value(two_pairs[3]))/100
+        power_high_card = Card.get_card_value(two_pairs[4]) / 10000
+        power_combo = round(TWO_PAIRS + power_first_pair + power_second_pair + power_high_card, 4)
         return two_pairs, power_combo
     else:
         return 0
@@ -252,8 +255,10 @@ def is_one_pair(sorted_cards_arg):
         first_index = sorted_cards_arg.index(one_pair[0])
         remaining_cards = sorted_cards_arg[0:first_index] + sorted_cards_arg[first_index + 2:]
         one_pair_combo = one_pair + remaining_cards[:3]
-        sum_ranks_combo = sum([Card.get_card_value(card) for card in one_pair_combo])
-        power_combo = ONE_PAIR + sum_ranks_combo
+        # sum_ranks_combo = sum([Card.get_card_value(card) for card in one_pair_combo])
+        power_pair = Card.get_card_value(one_pair_combo[0]) + Card.get_card_value(one_pair_combo[1])
+        power_unpaired_cards = (Card.get_card_value(one_pair_combo[2]) + Card.get_card_value(one_pair_combo[3]) + Card.get_card_value(one_pair_combo[4]))/100
+        power_combo = round(ONE_PAIR + power_pair + power_unpaired_cards, 2)
         return one_pair_combo, power_combo
     else:
         return 0
