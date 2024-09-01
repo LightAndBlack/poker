@@ -60,15 +60,20 @@ for i in range(num_active_players):
             player.share = 0.5
         else:
             player.share = 0
+        player_initial_stack = player.stack
         print(f"Стек игрока {player.name}: {player.stack} бб, позиция: {player.position}")
     print("\n")
 
 players_to_remove = []
 final_hands = all_hands.values()
+# final_hands = {'Player 1': ['Ac', 'Qh', '7h', '4h', '9s', '5s', '5c'], 'Player 2': ['3h', 'Kc', '7h', '4h', '9s', '5s', '5c'], 'Player 3': ['5d', '9c', '7h', '4h', '9s', '5s', '5c'], 'Player 4': ['2h', 'Tc', '7h', '4h', '9s', '5s', '5c'], 'Player 5': ['Ts', '8d', '7h', '4h', '9s', '5s', '5c'], 'Player 6': ['Qs', 'Ah', '7h', '4h', '9s', '5s', '5c']}
+# final_hands = all_hands = {'Player 1': ['Kc', 'Tc', '7s', 'Ks', '4s', '3h', '7c'], 'Player 2': ['Th', 'Ac', '7s', 'Ks', '4s', '3h', '7c'], 'Player 3': ['3s', 'Js', '7s', 'Ks', '4s', '3h', '7c'], 'Player 4': ['2c', '6s', '7s', 'Ks', '4s', '3h', '7c'], 'Player 5': ['Ts', '6h', '7s', 'Ks', '4s', '3h', '7c'], 'Player 6': ['Td', '2d', '7s', 'Ks', '4s', '3h', '7c']}
 print(f"final_hands = {final_hands}")
 for idx, player in enumerate(players):
     player.pocket_cards = list(all_hands.values())[idx][0:2]
     player.final_combo = list(all_hands.values())[idx]
+    # player.pocket_cards = list(final_hands.values())[idx][0:2]
+    # player.final_combo = list(final_hands.values())[idx]
     # print(player.name, player.position, player.stack, evaluate_combo(sort_cards(player.final_combo)))
     # print(f"final_hands = {final_hands}")
     # player.pocket_cards = final_hand[0:2]
@@ -119,8 +124,8 @@ def preflop_action():
             elif player in players_to_remove:
                 continue
             else:
-                player.action = float(input(
-                    f"Игрок {player.name} выберите действие (0 - fold, 2 - call, 3 - raise, 4 - all_in): "))
+                player.action = float(
+                    input(f"Игрок {player.name} выберите действие (0 - fold, 2 - call, 3 - raise, 4 - all_in): "))
             # print(f"pot = {pot} бб\n")
             # if call_players:
             #     for cpl in call_players:
@@ -179,7 +184,15 @@ def preflop_action():
                     call_count += 1
                     if all_in_players and player.stack <= call_all_in:
                         all_in_players.append(player)
-                        dif_to_call = player.stack
+                        if player.share > 1:
+                            dif_to_call = player.stack
+                            print(f"player.share = {player.share}, dif_to_call = {dif_to_call}")
+                        # elif player.share <= 1 and player.position == 'SB':
+                        #     dif_to_call = player.stack
+                        #     print(f"player.share = {player.share}, dif_to_call = {dif_to_call}")
+                        else:
+                            dif_to_call = player_initial_stack - player.share
+                            print(f"player.share = {player.share}, dif_to_call = {dif_to_call}")
                         all_in_count += 1
                         player.stack = 0
                         pot += dif_to_call
@@ -231,11 +244,20 @@ def preflop_action():
                 case 3:
                     # print(f"\npot = {pot} бб")
                     player.bet = float(input(f"Введите размер ставки от 2 до {player.stack} бб: "))
-                    if player.bet == player.stack:
+                    if player.bet == player.stack and player.share > 1:
                         all_in_players.append(player)
                         all_in_count += 1
                         player.stack = 0
                         pot += player.bet
+                        call_all_in = player.bet
+                        print(
+                            f"Игрок {player.name} ставит {player.bet} бб и идет all-in остаток игрока = {player.stack}, ПОТ = {pot}")
+                        continue
+                    if player.bet == player.stack and player.share <= 1:
+                        all_in_players.append(player)
+                        all_in_count += 1
+                        player.stack = 0
+                        pot += player.bet - player.share
                         call_all_in = player.bet
                         print(
                             f"Игрок {player.name} ставит {player.bet} бб и идет all-in остаток игрока = {player.stack}, ПОТ = {pot}")
@@ -525,7 +547,7 @@ if isinstance(preflop_result, tuple):
                         combo_power = evaluate_combo(sort_cards(player.final_combo))
                         print(f"combo_power = {combo_power}")
                         combo = combo_power[0]
-                        power = int(combo_power[1][1])
+                        power = float(combo_power[1][1])
                         if power > win_power:
                             win_power = power
                             win_players.clear()
@@ -535,21 +557,23 @@ if isinstance(preflop_result, tuple):
                             name_win_combo = combo
                         elif win_power == power:
                             win_players.append(player)
-                        print(f"Игрок {player.name} на позиции {player.position} с оставшимся стеком {player.stack} бб собрал комбинацию {combo} - {combo_power[1][0]}")
+                        print(
+                            f"Игрок {player.name} на позиции {player.position} с оставшимся стеком {player.stack} бб собрал комбинацию {combo} - {combo_power[1][0]}")
                         # print(player.name, player.position, player.stack, evaluate_combo(sort_cards(player.final_combo)))
                 print()
                 print()
                 if len(win_players) == 1:
                     win_players[0].stack += river_pot
-                    print(f"Игрок {win_players[0].name} на позиции {win_players[0].position} ВЫИГРАЛ основной банк {river_pot} бб c комбинацией {name_win_combo} - {win_combo}")
+                    print(
+                        f"Игрок {win_players[0].name} на позиции {win_players[0].position} ВЫИГРАЛ основной банк {river_pot} бб c комбинацией {name_win_combo} - {win_combo}")
                     print(f"Стек игрока {win_players[0].name} составляет {win_players[0].stack} бб")
                 else:
                     print("Игроки ПОДЕЛИЛИ основной банк:")
                     for player in win_players:
-                        player.stack += round(river_pot/len(win_players), 2)
-                        print(f"Игрок {player.name} на позиции {player.position} ВЫИГРАЛ основной банк {player.stack} бб c комбинацией {name_win_combo} - {win_combo}")
+                        player.stack += round(river_pot / len(win_players), 2)
+                        print(
+                            f"Игрок {player.name} на позиции {player.position} ВЫИГРАЛ основной банк {player.stack} бб c комбинацией {name_win_combo} - {win_combo}")
                         print(f"Стек игрока {player.name} составляет {player.stack} бб")
-
 
 #     if river_players:
 #         print("\nВСКРЫВАЕМ КАРТЫ: \n")
