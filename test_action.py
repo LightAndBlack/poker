@@ -416,15 +416,15 @@ def board_action(board_players_arg, pot_arg):
                     print(f"Игрок {player.name} говорит чек и пропускает ход\n")
                     print(f"\npot = {pot_arg} бб")
                     check_players.append(player)
-                    if len(check_players) == count_players or len(check_players) + fold_count == count_players:
+                    if len(check_players) + fold_count == count_players:
                         # print("\nПЕРЕХОДИМ К ТЕРНУ: ")
                         for cpl in check_players:
-                            print(f"count_players = {cpl.name}, position = {cpl.position}")
+                            print(f"check_players = {cpl.name}, position = {cpl.position}")
                         print(f"fold_count = {fold_count}")
                         print(f"check_players = {check_players}")
                         print(f"call_count = {call_count}")
                         print(f"raise_count = {raise_count}")
-                        board_players_arg.clear()
+                        # board_players_arg.clear()
                         return check_players, pot_arg
                 case 2:
                     print(f"Игрок {player.name} уравнивает ставку\n")
