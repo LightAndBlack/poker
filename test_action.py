@@ -148,7 +148,7 @@ def preflop_action():
                         print(f"Игрок {players_sort[-1].name} выиграл основной банк")
                         flag = False
                     # elif len(players_sort) - fold_count == 1 and players_raise:
-                    elif players_raise and fold_count + raise_count + call_count == count_players:
+                    elif players_raise and fold_count + raise_count + call_count == count_players and not all_in_players:
                         if fold_count == count_players - 1:
                             print(f"Игрок {players_raise[0].name} выиграл основной банк")
                             flag = False
@@ -176,6 +176,20 @@ def preflop_action():
                     # if players_raise and fold_count + raise_count + call_count == count_players:
                     #     print("ПЕРЕХОДИМ КО ФЛОПУ: ")
                     #     flag = False
+                    if all_in_count > 1 and all_in_count + fold_count == count_players:
+                        print("\nПЕРЕХОДИМ КО ФЛОПУ: ")
+                        for cpl in all_in_players:
+                            print(f"count_players = {cpl.name}, position = {cpl.position}")
+                        print(f"fold_count = {fold_count}")
+                        print(f"call_count = {call_count}")
+                        print(f"raise_count = {raise_count}")
+                        return all_in_players, pot
+                    elif all_in_count == 1 and fold_count == count_players - 1:
+                        print(f"Игрок {all_in_players[0].name} выиграл основной банк = {pot} бб")
+                        all_in_players[0] = pot
+                        print(f"Стек игрок {all_in_players[0].name} = {pot} бб")
+                        flag = False
+                        break
                 case 1 if player.position == "BB":
                     # print(f"\n pot = {pot} бб")
                     print(f"Игрок {player.name} говорит чек и пропускает ход\n")
@@ -593,9 +607,12 @@ if isinstance(preflop_result, tuple):
 
 # board_action(turn_players, turn_pot)
 
-# TODO - ВРОДЕ ПОФИКСИЛ Тестировать стеки блайндов на колах (B&B), исправлять ошибки - см. отчет по тестам
-# TODO - ВРОДЕ КАК СДЕЛАЛ Определение победителя или ничьей, вывод и банк
+
+# TODO дебаг на зависания при вводе исходных данных! прологировать и посмотреть логи! стр 31 - 33!
 # TODO Побочные банки, победитель внес больше, меньше. Определение побочных победителей
 # TODO хэдз-ап
 # TODO рефакторинг кода
 # TODO оптимизация - битовые маски и сдвиги
+
+# ВРОДЕ ПОФИКСИЛ Тестировать стеки блайндов на колах (B&B), исправлять ошибки - см. отчет по тестам
+# ВРОДЕ КАК СДЕЛАЛ Определение победителя или ничьей, вывод и банк
